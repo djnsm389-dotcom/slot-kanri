@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -11,22 +12,22 @@
     :root {
       --bg: #f5f6f8;
       --bg2: #ffffff;
-      --teal: #0891b2;
-      --teal2: #0369a1;
-      --teal-dim: rgba(8,145,178,0.07);
-      --teal-border: rgba(8,145,178,0.18);
-      --gold: #d97706;
-      --gold2: #b45309;
-      --gold-dim: rgba(217,119,6,0.08);
-      --gold-border: rgba(217,119,6,0.25);
-      --text: #1e293b;
-      --text-dim: #94a3b8;
-      --warn: #ef4444;
-      --warn-dim: rgba(239,68,68,0.08);
-      --good: #16a34a;
-      --good-dim: rgba(22,163,74,0.08);
-      --blue-hi: #2563eb;
-      --blue-dim: rgba(37,99,235,0.08);
+      --teal: #0369a1;
+      --teal2: #0284c7;
+      --teal-dim: rgba(3,105,161,0.10);
+      --teal-border: rgba(3,105,161,0.30);
+      --gold: #b45309;
+      --gold2: #92400e;
+      --gold-dim: rgba(180,83,9,0.12);
+      --gold-border: rgba(180,83,9,0.35);
+      --text: #0f172a;
+      --text-dim: #64748b;
+      --warn: #dc2626;
+      --warn-dim: rgba(220,38,38,0.10);
+      --good: #15803d;
+      --good-dim: rgba(21,128,61,0.10);
+      --blue-hi: #1e3a8a;
+      --blue-dim: rgba(30,58,138,0.10);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; min-height: 100vh; }
@@ -35,7 +36,7 @@
     /* Header */
     .header { margin-bottom: 28px; border-bottom: 1px solid var(--teal-border); padding-bottom: 20px; }
     .header-top { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-    .header-sub { font-family: 'Rajdhani', sans-serif; font-size: 10px; letter-spacing: 0.4em; color: rgba(8,145,178,0.45); margin-bottom: 8px; }
+    .header-sub { font-family: 'Rajdhani', sans-serif; font-size: 10px; letter-spacing: 0.4em; color: rgba(3,105,161,0.65); margin-bottom: 8px; }
     .header-title { font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700; color: var(--text); }
     .header-title span { color: var(--teal2); margin-left: 8px; }
     .save-indicator { font-size: 10px; color: var(--good); font-family: 'Rajdhani', sans-serif; letter-spacing: 0.1em; opacity: 0; transition: opacity 0.3s; margin-left: 12px; }
@@ -52,7 +53,7 @@
 
     /* Section */
     .section {
-      background: var(--bg2); border: 1px solid var(--teal-border);
+      background: var(--bg2); border: 1px solid rgba(3,105,161,0.25);
       border-radius: 4px; padding: 22px 26px; margin-bottom: 18px;
       position: relative; overflow: hidden;
     }
@@ -193,14 +194,14 @@
     /* Group summary cards */
     .group-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
     .group-card {
-      background: var(--gold-dim); border: 1px solid var(--gold-border);
+      background: rgba(180,83,9,0.06); border: 1px solid rgba(180,83,9,0.3);
       border-radius: 4px; padding: 18px 20px; position: relative; overflow: hidden;
     }
     .group-card::before {
       content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
       background: linear-gradient(180deg, var(--gold), transparent);
     }
-    .group-card-area { font-size: 10px; color: rgba(245,158,11,0.6); letter-spacing: 0.15em; margin-bottom: 6px; font-family: 'Rajdhani', sans-serif; }
+    .group-card-area { font-size: 10px; color: rgba(180,83,9,0.7); letter-spacing: 0.15em; margin-bottom: 6px; font-family: 'Rajdhani', sans-serif; }
     .group-card-name { font-size: 16px; font-weight: 700; color: var(--gold); margin-bottom: 14px; }
     .group-card-rec { font-family: 'Rajdhani', sans-serif; font-size: 52px; font-weight: 700; color: var(--gold); line-height: 1; }
     .group-card-unit { font-size: 13px; color: var(--gold2); margin-top: 4px; }
@@ -210,9 +211,9 @@
     .badge {
       display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 700;
     }
-    .badge.blue { background: var(--blue-dim); color: var(--blue-hi); border: 1px solid rgba(96,165,250,0.3); }
-    .badge.green { background: var(--good-dim); color: var(--good); border: 1px solid rgba(34,197,94,0.3); }
-    .badge.red { background: var(--warn-dim); color: var(--warn); border: 1px solid rgba(239,68,68,0.3); }
+    .badge.blue { background: rgba(30,58,138,0.12); color: #1e3a8a; border: 1px solid rgba(30,58,138,0.5); font-weight: 700; }
+    .badge.green { background: rgba(21,128,61,0.10); color: #15803d; border: 1px solid rgba(21,128,61,0.4); font-weight: 700; }
+    .badge.red { background: rgba(220,38,38,0.10); color: #dc2626; border: 1px solid rgba(220,38,38,0.4); font-weight: 700; }
 
     /* Week cards */
     .week-cards { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
@@ -223,7 +224,7 @@
     .week-num { font-family: 'Rajdhani', sans-serif; font-size: 40px; font-weight: 700; color: #1e293b; line-height: 1; }
     .week-num.gold { color: var(--gold); }
     .week-unit { font-size: 12px; color: rgba(0,0,0,0.25); margin-top: 4px; }
-    .week-os { font-size: 11px; color: rgba(8,145,178,0.6); margin-top: 6px; font-family: 'Rajdhani', sans-serif; }
+    .week-os { font-size: 11px; color: rgba(3,105,161,0.8); margin-top: 6px; font-family: 'Rajdhani', sans-serif; }
 
     /* Rival cards */
     .rivals-label { font-size: 10px; color: var(--text-dim); margin-bottom: 10px; letter-spacing: 0.08em; }
@@ -343,11 +344,11 @@ function n(v) { return parseFloat(v) || 0; }
 function fmt(v, d) { return n(v).toFixed(d === undefined ? 2 : d); }
 function loadData() { try { var r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : {}; } catch(e) { return {}; } }
 function saveData(d) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {} }
-function sufColor(r) { return r < 100 ? '#60a5fa' : r <= 120 ? '#22c55e' : '#ef4444'; }
+function sufColor(r) { return r < 100 ? '#1e3a8a' : r <= 120 ? '#15803d' : '#dc2626'; }
 function sufBadge(r) { return r < 100 ? 'blue' : r <= 120 ? 'green' : 'red'; }
 function sufMsg(r)   { return r < 100 ? '◎ 余地あり' : r <= 120 ? '✓ 適正' : '⚠ 供給過多'; }
-function sufBg(r)    { return r < 100 ? 'rgba(96,165,250,0.08)' : r <= 120 ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.12)'; }
-function sufBorder(r){ return r < 100 ? 'rgba(96,165,250,0.25)' : r <= 120 ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'; }
+function sufBg(r)    { return r < 100 ? 'rgba(30,58,138,0.08)' : r <= 120 ? 'rgba(21,128,61,0.08)' : 'rgba(220,38,38,0.08)'; }
+function sufBorder(r){ return r < 100 ? 'rgba(30,58,138,0.5)' : r <= 120 ? 'rgba(21,128,61,0.35)' : 'rgba(220,38,38,0.35)'; }
 
 function App() {
   var saved = loadData();
@@ -528,7 +529,7 @@ function App() {
                     h('div', { className: 'group-card-suf' },
                       h('div', null,
                         h('div', { style: { fontSize: 10, color: 'rgba(245,158,11,0.5)', marginBottom: 4 } }, 'エリア充足率'),
-                        h('div', { className: 'group-card-suf-num', style: { color: sufColor(suf) } }, fmt(suf) + '%')
+                        h('div', { className: 'group-card-suf-num', style: { color: sufColor(suf), fontWeight: 700 } }, fmt(suf) + '%')
                       ),
                       h('span', { className: 'badge ' + sufBadge(suf) }, sufMsg(suf))
                     )

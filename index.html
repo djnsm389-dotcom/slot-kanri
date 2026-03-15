@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>20円スロット新台導入管理ツール【統括】</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --bg2: #ffffff;
+      --teal: #0891b2;
+      --teal2: #0369a1;
+      --teal-dim: rgba(8,145,178,0.07);
+      --teal-border: rgba(8,145,178,0.18);
+      --gold: #d97706;
+      --gold2: #b45309;
+      --gold-dim: rgba(217,119,6,0.08);
+      --gold-border: rgba(217,119,6,0.25);
+      --text: #1e293b;
+      --text-dim: #94a3b8;
+      --warn: #ef4444;
+      --warn-dim: rgba(239,68,68,0.08);
+      --good: #16a34a;
+      --good-dim: rgba(22,163,74,0.08);
+      --blue-hi: #2563eb;
+      --blue-dim: rgba(37,99,235,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; min-height: 100vh; }
+    .wrap { max-width: 1060px; margin: 0 auto; padding: 32px 24px 48px; }
+
+    /* Header */
+    .header { margin-bottom: 28px; border-bottom: 1px solid var(--teal-border); padding-bottom: 20px; }
+    .header-top { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .header-sub { font-family: 'Rajdhani', sans-serif; font-size: 10px; letter-spacing: 0.4em; color: rgba(8,145,178,0.45); margin-bottom: 8px; }
+    .header-title { font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 700; color: var(--text); }
+    .header-title span { color: var(--teal2); margin-left: 8px; }
+    .save-indicator { font-size: 10px; color: var(--good); font-family: 'Rajdhani', sans-serif; letter-spacing: 0.1em; opacity: 0; transition: opacity 0.3s; margin-left: 12px; }
+    .save-indicator.show { opacity: 1; }
+
+    /* View toggle */
+    .view-toggle { display: flex; gap: 8px; margin-top: 16px; }
+    .view-btn {
+      padding: 7px 22px; border-radius: 3px; font-size: 13px; cursor: pointer;
+      border: 1px solid var(--teal-border); background: transparent;
+      color: var(--teal2); font-family: 'Noto Sans JP', sans-serif; transition: all 0.15s;
+    }
+    .view-btn.active { background: var(--teal); color: #fff; font-weight: 700; border-color: var(--teal); }
+
+    /* Section */
+    .section {
+      background: var(--bg2); border: 1px solid var(--teal-border);
+      border-radius: 4px; padding: 22px 26px; margin-bottom: 18px;
+      position: relative; overflow: hidden;
+    }
+    .section::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+      background: linear-gradient(180deg, var(--teal), transparent);
+    }
+    .section.gold-section { border-color: var(--gold-border); }
+    .section.gold-section::before { background: linear-gradient(180deg, var(--gold), transparent); }
+    .section-title {
+      font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.3em; color: var(--teal2); text-transform: uppercase; margin-bottom: 18px;
+    }
+    .section-title.gold { color: var(--gold); }
+
+    /* Inputs */
+    .input-row { display: flex; align-items: center; margin-bottom: 10px; gap: 12px; flex-wrap: wrap; }
+    .input-label { color: var(--text-dim); font-size: 12px; width: 190px; flex-shrink: 0; }
+    .num-input {
+      background: var(--teal-dim); border: 1px solid var(--teal-border);
+      border-radius: 2px; color: var(--text); padding: 6px 12px; font-size: 16px; width: 140px;
+      font-family: 'Rajdhani', sans-serif; font-weight: 600; outline: none;
+    }
+    .num-input:focus { border-color: var(--teal2); }
+    .text-input {
+      background: var(--teal-dim); border: 1px solid var(--teal-border);
+      border-radius: 2px; color: var(--text); padding: 6px 12px; font-size: 14px;
+      font-family: 'Noto Sans JP', sans-serif; outline: none;
+    }
+    .text-input:focus { border-color: var(--teal2); }
+    .suffix { color: var(--text-dim); font-size: 12px; }
+    .result-box {
+      background: var(--teal-dim); border: 1px solid var(--teal-border);
+      border-radius: 2px; padding: 10px 16px; margin-top: 12px; display: flex; gap: 32px; flex-wrap: wrap;
+    }
+    .result-label { font-family: 'Rajdhani', sans-serif; font-size: 10px; color: var(--teal2); letter-spacing: 0.2em; margin-bottom: 4px; }
+    .result-val { font-family: 'Rajdhani', sans-serif; font-size: 20px; color: var(--text); font-weight: 600; }
+
+    /* Eval buttons */
+    .eval-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .eval-btn {
+      padding: 4px 14px; border-radius: 2px; font-size: 12px; cursor: pointer;
+      border: 1px solid var(--teal-border); background: transparent;
+      color: var(--teal2); font-family: 'Noto Sans JP', sans-serif;
+    }
+    .eval-btn.active { background: var(--teal); color: #fff; font-weight: 700; border-color: var(--teal); }
+    .eval-btn.bad { border-color: rgba(239,68,68,0.4); color: var(--warn); }
+    .eval-btn.bad.active { background: var(--warn); color: #fff; }
+
+    /* Area tabs (detail view) */
+    .area-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .area-tab {
+      padding: 6px 16px; border-radius: 20px; font-size: 13px; cursor: pointer;
+      border: 1px solid var(--teal-border); background: transparent;
+      color: var(--teal2); font-family: 'Noto Sans JP', sans-serif; transition: all 0.15s;
+    }
+    .area-tab.active { background: var(--teal); color: #fff; font-weight: 700; border-color: var(--teal); }
+    .area-tab-del { background: transparent; border: none; color: rgba(239,68,68,0.3); cursor: pointer; font-size: 12px; margin-left: 2px; }
+    .area-tab-del:hover { color: var(--warn); }
+    .add-area-btn {
+      padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer;
+      border: 1px dashed var(--teal-border); background: transparent;
+      color: var(--teal2); font-family: 'Noto Sans JP', sans-serif;
+    }
+    .area-name-input {
+      background: var(--teal-dim); border: 1px solid var(--teal-border);
+      border-radius: 4px; color: var(--text); padding: 4px 10px;
+      font-size: 13px; width: 140px; outline: none; font-family: 'Noto Sans JP', sans-serif;
+    }
+    .area-name-input:focus { border-color: var(--teal2); }
+
+    /* Store rows */
+    .store-row {
+      padding: 10px 14px; margin-bottom: 8px; border-radius: 3px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .store-row.group-row { background: var(--gold-dim); border: 1px solid var(--gold-border); }
+    .store-row.rival-row { background: #f9fafb; border: 1px solid rgba(0,0,0,0.08); }
+    .store-name-input {
+      background: transparent; border: none;
+      font-size: 13px; width: 140px; outline: none; padding: 2px 4px; font-family: 'Noto Sans JP', sans-serif;
+    }
+    .store-name-input.group { color: var(--gold); font-weight: 700; border-bottom: 1px solid var(--gold-border); }
+    .store-name-input.rival { color: var(--text); border-bottom: 1px solid rgba(8,145,178,0.2); }
+    .store-machines-input {
+      background: var(--teal-dim); border: 1px solid var(--teal-border);
+      border-radius: 2px; color: var(--text); padding: 5px 10px;
+      font-size: 15px; width: 100px; outline: none; font-family: 'Rajdhani', sans-serif; font-weight: 600;
+    }
+    .store-machines-input:focus { border-color: var(--teal2); }
+    .store-share { color: var(--text-dim); font-size: 12px; }
+    .store-rec { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; margin-left: 8px; }
+    .group-check { accent-color: var(--gold); width: 14px; height: 14px; cursor: pointer; }
+    .add-store-btn {
+      margin-top: 6px; background: transparent; border: 1px dashed var(--teal-border);
+      border-radius: 2px; color: var(--teal2); padding: 6px 16px; font-size: 11px;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+    }
+    .remove-btn { margin-left: auto; background: transparent; border: none; color: rgba(0,0,0,0.2); cursor: pointer; font-size: 14px; }
+    .remove-btn:hover { color: var(--warn); }
+    .area-summary-bar {
+      margin-top: 12px; padding: 10px 14px; background: var(--teal-dim);
+      border-radius: 2px; font-size: 12px; color: var(--text-dim); display: flex; gap: 24px; flex-wrap: wrap;
+    }
+
+    /* Sufficiency */
+    .suf-box {
+      padding: 18px 22px; border-radius: 3px;
+      display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+    }
+    .suf-label { font-family: 'Noto Sans JP', sans-serif; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; }
+    .suf-num { font-family: 'Rajdhani', sans-serif; font-size: 52px; font-weight: 700; line-height: 1; }
+    .suf-total { font-family: 'Rajdhani', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; }
+    .suf-msg { font-size: 12px; }
+    .suf-divider { width: 1px; background: rgba(0,0,0,0.08); align-self: stretch; }
+    .planned-wrap { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+    .planned-check { width: 14px; height: 14px; accent-color: var(--teal); cursor: pointer; }
+    .planned-label { font-size: 11px; color: var(--text-dim); }
+    .planned-input {
+      background: var(--teal-dim); border: 1px solid var(--teal-border);
+      border-radius: 2px; color: var(--text); padding: 3px 8px;
+      font-size: 13px; width: 70px; outline: none;
+      font-family: 'Rajdhani', sans-serif; font-weight: 600;
+    }
+    .planned-input:focus { border-color: var(--teal2); }
+    .planned-confirmed { font-size: 10px; color: var(--teal2); background: var(--teal-dim); padding: 2px 6px; border-radius: 10px; }
+    .hoped-wrap { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+    .hoped-input {
+      background: var(--gold-dim); border: 1px solid var(--gold-border);
+      border-radius: 2px; color: var(--text); padding: 3px 8px;
+      font-size: 13px; width: 70px; outline: none;
+      font-family: 'Rajdhani', sans-serif; font-weight: 600;
+    }
+    .hoped-input:focus { border-color: var(--gold); }
+    .hoped-label { font-size: 11px; color: var(--text-dim); }
+    .hoped-confirmed { font-size: 10px; color: var(--gold); background: var(--gold-dim); padding: 2px 6px; border-radius: 10px; }
+
+    /* Group summary cards */
+    .group-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+    .group-card {
+      background: var(--gold-dim); border: 1px solid var(--gold-border);
+      border-radius: 4px; padding: 18px 20px; position: relative; overflow: hidden;
+    }
+    .group-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+      background: linear-gradient(180deg, var(--gold), transparent);
+    }
+    .group-card-area { font-size: 10px; color: rgba(245,158,11,0.6); letter-spacing: 0.15em; margin-bottom: 6px; font-family: 'Rajdhani', sans-serif; }
+    .group-card-name { font-size: 16px; font-weight: 700; color: var(--gold); margin-bottom: 14px; }
+    .group-card-rec { font-family: 'Rajdhani', sans-serif; font-size: 52px; font-weight: 700; color: var(--gold); line-height: 1; }
+    .group-card-unit { font-size: 13px; color: var(--gold2); margin-top: 4px; }
+    .group-card-share { font-size: 11px; color: var(--text-dim); margin-top: 8px; font-family: 'Rajdhani', sans-serif; }
+    .group-card-suf { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gold-border); display: flex; align-items: center; gap: 10px; }
+    .group-card-suf-num { font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 700;
+    }
+    .badge.blue { background: var(--blue-dim); color: var(--blue-hi); border: 1px solid rgba(96,165,250,0.3); }
+    .badge.green { background: var(--good-dim); color: var(--good); border: 1px solid rgba(34,197,94,0.3); }
+    .badge.red { background: var(--warn-dim); color: var(--warn); border: 1px solid rgba(239,68,68,0.3); }
+
+    /* Week cards */
+    .week-cards { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+    .week-card { flex: 1; min-width: 90px; border-radius: 3px; padding: 14px 12px; text-align: center; }
+    .week-card.first { background: var(--teal-dim); border: 1px solid rgba(8,145,178,0.4); }
+    .week-card.other { background: #f9fafb; border: 1px solid rgba(0,0,0,0.08); }
+    .week-label { font-size: 10px; margin-bottom: 8px; letter-spacing: 0.08em; }
+    .week-num { font-family: 'Rajdhani', sans-serif; font-size: 40px; font-weight: 700; color: #1e293b; line-height: 1; }
+    .week-num.gold { color: var(--gold); }
+    .week-unit { font-size: 12px; color: rgba(0,0,0,0.25); margin-top: 4px; }
+    .week-os { font-size: 11px; color: rgba(8,145,178,0.6); margin-top: 6px; font-family: 'Rajdhani', sans-serif; }
+
+    /* Rival cards */
+    .rivals-label { font-size: 10px; color: var(--text-dim); margin-bottom: 10px; letter-spacing: 0.08em; }
+    .rival-cards { display: flex; flex-wrap: wrap; gap: 8px; }
+    .rival-card {
+      background: #f9fafb; border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 2px; padding: 8px 14px; text-align: center; min-width: 70px;
+    }
+    .rival-card.group-rival { background: var(--gold-dim); border-color: var(--gold-border); }
+    .rival-name { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+    .rival-name.gold { color: var(--gold); }
+    .rival-num { font-family: 'Rajdhani', sans-serif; font-size: 28px; font-weight: 600; color: var(--text); }
+    .rival-num.gold { color: var(--gold); font-size: 32px; }
+    .rival-unit { font-size: 9px; color: rgba(0,0,0,0.25); }
+
+    /* Rec info */
+    .rec-info {
+      padding: 14px 18px; background: rgba(0,0,0,0.04); border-radius: 2px;
+      font-size: 13px; color: var(--text-dim); line-height: 2.2;
+    }
+    .rec-info-label { font-size: 11px; color: var(--text-dim); }
+    .rec-info-val { font-size: 22px; font-weight: 700; font-family: 'Rajdhani', sans-serif; }
+
+    /* Sub label */
+    .sub-label { font-family: 'Rajdhani', sans-serif; font-size: 10px; letter-spacing: 0.15em; color: var(--text-dim); margin-bottom: 10px; }
+
+    /* IO */
+    .io-bar { display: flex; gap: 10px; flex-wrap: wrap; }
+    .io-btn { padding: 7px 18px; border-radius: 2px; font-size: 12px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
+    .io-btn.export { background: var(--teal-dim); color: var(--teal2); border: 1px solid var(--teal-border); }
+    .io-btn.import { background: #f9fafb; color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); }
+    .io-hint { font-size: 10px; color: var(--text-dim); margin-top: 8px; }
+
+    .footer { text-align: center; font-size: 10px; color: rgba(8,145,178,0.2); margin-top: 12px; letter-spacing: 0.08em; font-family: 'Rajdhani', sans-serif; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { padding: 8px 12px; font-weight: 400; border-bottom: 1px solid var(--teal-border); color: var(--text-dim); font-size: 11px; cursor: pointer; }
+    th.active { color: var(--teal2); font-weight: 700; }
+    td { padding: 8px 12px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    td.active-col { background: var(--teal-dim); color: var(--text); font-weight: 600; font-family: 'Rajdhani', sans-serif; font-size: 16px; text-align: center; }
+    td.inactive-col { color: rgba(0,0,0,0.25); font-family: 'Rajdhani', sans-serif; text-align: center; }
+    .hint { font-size: 10px; color: var(--text-dim); margin-top: 6px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const { useState, useEffect, useRef, createElement: h } = React;
+
+const STORAGE_KEY = 'slot_kanri_v1';
+const DECAY_RATIOS = {
+  特上: [1.000, 0.970, 0.940, 0.920, 0.900],
+  良:   [1.000, 0.930, 0.840, 0.760, 0.730],
+  並:   [1.000, 0.870, 0.740, 0.640, 0.550],
+  悪:   [1.000, 0.780, 0.620, 0.500, 0.350],
+};
+const EVALUATIONS = ["特上", "良", "並", "悪"];
+const WEEKS = ["初週", "2週目", "3週目", "4週目", "5週目"];
+
+const DEFAULT_AREAS = [
+  { name: "浜線エリア", areaPeakCustomers: "2100", stores: [
+    { name: "浜線店",         machines: "491", isGroup: true  },
+    { name: "白山店",         machines: "259", isGroup: true  },
+    { name: "FACE本山",       machines: "717", isGroup: false },
+    { name: "FACE新市街",     machines: "236", isGroup: false },
+    { name: "シルバー近見",   machines: "351", isGroup: false },
+    { name: "ベルエア南高江", machines: "410", isGroup: false },
+    { name: "まるみつ浜線",   machines: "461", isGroup: false },
+    { name: "１２３新市街",   machines: "339", isGroup: false },
+    { name: "つかさ南高江",   machines: "251", isGroup: false },
+    { name: "大劇嘉島",       machines: "370", isGroup: false },
+  ]},
+  { name: "菊陽エリア", areaPeakCustomers: "2090", stores: [
+    { name: "菊陽店",               machines: "402", isGroup: true  },
+    { name: "FACE菊陽",             machines: "568", isGroup: false },
+    { name: "２１菊陽",             machines: "353", isGroup: false },
+    { name: "ワンダーランド光の森",  machines: "312", isGroup: false },
+    { name: "つかさ菊陽",           machines: "368", isGroup: false },
+    { name: "ベルエア北部",         machines: "405", isGroup: false },
+    { name: "テンガイ戸島",         machines: "423", isGroup: false },
+    { name: "大劇長嶺",             machines: "421", isGroup: false },
+    { name: "シルバー麻生田",       machines: "307", isGroup: false },
+  ]},
+  { name: "八代エリア", areaPeakCustomers: "630", stores: [
+    { name: "八代店",         machines: "228", isGroup: true  },
+    { name: "イチロク八代",   machines: "200", isGroup: false },
+    { name: "D'station八代",  machines: "437", isGroup: false },
+    { name: "シルバー八代",   machines: "286", isGroup: false },
+    { name: "２１新八代",     machines: "280", isGroup: false },
+  ]},
+  { name: "荒尾エリア", areaPeakCustomers: "940", stores: [
+    { name: "グリーンランド店", machines: "156", isGroup: true  },
+    { name: "ベルエア荒尾",    machines: "460", isGroup: false },
+    { name: "マルハン荒尾",    machines: "320", isGroup: false },
+    { name: "ワンダー日出町",  machines: "315", isGroup: false },
+    { name: "マルハン銀水",    machines: "193", isGroup: false },
+    { name: "メタルポリス",    machines: "214", isGroup: false },
+    { name: "つかさ大牟田店",  machines: "213", isGroup: false },
+  ]},
+  { name: "水俣エリア", areaPeakCustomers: "470", stores: [
+    { name: "水俣店",           machines: "161", isGroup: true  },
+    { name: "２１水俣",         machines: "156", isGroup: false },
+    { name: "ＭＧＭ出水",       machines: "200", isGroup: false },
+    { name: "ダイナム出水",     machines: "160", isGroup: false },
+    { name: "ニューヨーク出水", machines: "240", isGroup: false },
+    { name: "八光出水",         machines: "140", isGroup: false },
+  ]},
+  { name: "天草エリア", areaPeakCustomers: "340", stores: [
+    { name: "天草本渡店",           machines: "181", isGroup: true  },
+    { name: "ＰＡＲＩＳ＆ＰＡＲＩＳ", machines: "160", isGroup: false },
+    { name: "夢屋 天草",            machines: "154", isGroup: false },
+    { name: "シルバー天草本渡",     machines: "212", isGroup: false },
+  ]},
+];
+
+function n(v) { return parseFloat(v) || 0; }
+function fmt(v, d) { return n(v).toFixed(d === undefined ? 2 : d); }
+function loadData() { try { var r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : {}; } catch(e) { return {}; } }
+function saveData(d) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {} }
+function sufColor(r) { return r < 100 ? '#60a5fa' : r <= 120 ? '#22c55e' : '#ef4444'; }
+function sufBadge(r) { return r < 100 ? 'blue' : r <= 120 ? 'green' : 'red'; }
+function sufMsg(r)   { return r < 100 ? '◎ 余地あり' : r <= 120 ? '✓ 適正' : '⚠ 供給過多'; }
+function sufBg(r)    { return r < 100 ? 'rgba(96,165,250,0.08)' : r <= 120 ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.12)'; }
+function sufBorder(r){ return r < 100 ? 'rgba(96,165,250,0.25)' : r <= 120 ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'; }
+
+function App() {
+  var saved = loadData();
+
+  const [prefMachines,  setPrefMachines]  = useState(saved.prefMachines  || "16926");
+  const [peakOccupancy, setPeakOccupancy] = useState(saved.peakOccupancy || "38.7");
+  const [prefRatio,     setPrefRatio]     = useState(saved.prefRatio     || "2");
+  const [machineName,   setMachineName]   = useState(saved.machineName   || "");
+  const [nationalSales, setNationalSales] = useState(saved.nationalSales || "");
+  const [selectedEval,  setSelectedEval]  = useState(saved.selectedEval  || "良");
+  const [areas,         setAreas]         = useState((saved.areas && saved.areas.length > 0) ? saved.areas : DEFAULT_AREAS);
+  const [currentArea,   setCurrentArea]   = useState(saved.currentArea   || 0);
+  const [view,          setView]          = useState('summary');
+  const [saveFlash,     setSaveFlash]     = useState(false);
+  const [mounted,       setMounted]       = useState(false);
+  const importRef = useRef(null);
+
+  useEffect(function() { setMounted(true); }, []);
+  useEffect(function() {
+    if (!mounted) return;
+    saveData({ prefMachines, peakOccupancy, prefRatio, machineName, nationalSales, selectedEval, areas, currentArea });
+    setSaveFlash(true);
+    var t = setTimeout(function() { setSaveFlash(false); }, 1500);
+    return function() { clearTimeout(t); };
+  }, [mounted, prefMachines, peakOccupancy, prefRatio, machineName, nationalSales, selectedEval, areas, currentArea]);
+
+  // Calculations
+  const maxPlayers   = n(prefMachines) * (n(peakOccupancy) / 100);
+  const prefSales    = n(nationalSales) * (n(prefRatio) / 100);
+  const baseOutshare = maxPlayers > 0 && n(nationalSales) > 0 ? (prefSales / maxPlayers) * 100 : 0;
+  const outshareByEval = {};
+  EVALUATIONS.forEach(function(ev) {
+    outshareByEval[ev] = DECAY_RATIOS[ev].map(function(r) { return baseOutshare * r; });
+  });
+
+  function calcAreaData(area) {
+    var totalMachines = area.stores.reduce(function(s, st) { return s + n(st.machines); }, 0);
+    var weeklyCustomers = outshareByEval[selectedEval].map(function(os) { return n(area.areaPeakCustomers) * (os / 100); });
+    var storeData = area.stores.map(function(st) {
+      var share = totalMachines > 0 ? n(st.machines) / totalMachines : 0;
+      return Object.assign({}, st, { share: share, weeklyRec: weeklyCustomers.map(function(c) { return c * share; }) });
+    });
+    // 充足率：確定台数・希望台数がある店舗はその台数、ない店舗はシェア按分（5週目ベース）
+    var totalSupply5w = 0;
+    var confirmedCount = 0;
+    area.stores.forEach(function(st) {
+      if (!st.isGroup && st.hasPlanned && n(st.plannedUnits) > 0) {
+        // 競合店：確定台数
+        totalSupply5w += n(st.plannedUnits);
+        confirmedCount++;
+      } else if (st.isGroup && n(st.hopedUnits) > 0) {
+        // グループ店：希望台数
+        totalSupply5w += n(st.hopedUnits);
+        confirmedCount++;
+      } else {
+        var share = totalMachines > 0 ? n(st.machines) / totalMachines : 0;
+        totalSupply5w += weeklyCustomers[4] * share;
+      }
+    });
+    var sufficiency = weeklyCustomers[4] > 0 ? (totalSupply5w / weeklyCustomers[4]) * 100 : 0;
+    var sufNote = confirmedCount > 0 ? '（' + confirmedCount + '店入力反映）' : '（シェア按分）';
+    return { totalMachines: totalMachines, weeklyCustomers: weeklyCustomers, storeData: storeData, sufficiency: sufficiency, sufNote: sufNote, totalSupply5w: totalSupply5w };
+  }
+
+  // Area mutations
+  var areaIdx = Math.min(currentArea, areas.length - 1);
+  var area = areas[areaIdx];
+
+  function updateArea(field, val) {
+    setAreas(function(prev) { return prev.map(function(a, i) { return i === areaIdx ? Object.assign({}, a, { [field]: val }) : a; }); });
+  }
+  function updateStore(si, field, val) {
+    setAreas(function(prev) {
+      return prev.map(function(a, i) {
+        if (i !== areaIdx) return a;
+        return Object.assign({}, a, { stores: a.stores.map(function(s, idx) { return idx === si ? Object.assign({}, s, { [field]: val }) : s; }) });
+      });
+    });
+  }
+  function addStore() {
+    setAreas(function(prev) {
+      return prev.map(function(a, i) {
+        if (i !== areaIdx) return a;
+        return Object.assign({}, a, { stores: a.stores.concat([{ name: "競合店", machines: "200", isGroup: false }]) });
+      });
+    });
+  }
+  function removeStore(si) {
+    setAreas(function(prev) {
+      return prev.map(function(a, i) {
+        if (i !== areaIdx) return a;
+        return Object.assign({}, a, { stores: a.stores.filter(function(_, idx) { return idx !== si; }) });
+      });
+    });
+  }
+  function addArea() {
+    var newArea = { name: "新エリア", areaPeakCustomers: "500", stores: [{ name: "自店", machines: "200", isGroup: true }] };
+    setAreas(function(prev) { return prev.concat([newArea]); });
+    setCurrentArea(areas.length);
+    setView('detail');
+  }
+  function removeArea(i) {
+    if (areas.length <= 1) return;
+    setAreas(function(prev) { return prev.filter(function(_, idx) { return idx !== i; }); });
+    setCurrentArea(Math.max(0, i - 1));
+  }
+
+  function handleExport() {
+    var data = { prefMachines, peakOccupancy, prefRatio, machineName, nationalSales, selectedEval, areas, currentArea };
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = 'slot_kanri_設定.json'; a.click();
+    URL.revokeObjectURL(url);
+  }
+  function handleImport(e) {
+    var file = e.target.files[0]; if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var d = JSON.parse(ev.target.result);
+        if (d.prefMachines)  setPrefMachines(d.prefMachines);
+        if (d.peakOccupancy) setPeakOccupancy(d.peakOccupancy);
+        if (d.prefRatio)     setPrefRatio(d.prefRatio);
+        if (d.machineName)   setMachineName(d.machineName);
+        if (d.nationalSales) setNationalSales(d.nationalSales);
+        if (d.selectedEval)  setSelectedEval(d.selectedEval);
+        if (d.areas && d.areas.length > 0) setAreas(d.areas);
+        if (d.currentArea !== undefined) setCurrentArea(d.currentArea);
+        alert('設定を読み込みました！');
+      } catch(err) { alert('読み込みに失敗しました。'); }
+    };
+    reader.readAsText(file); e.target.value = '';
+  }
+
+  function InputRow(label, value, setter, suffix, w) {
+    return h('div', { className: 'input-row' },
+      h('label', { className: 'input-label' }, label),
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+        h('input', {
+          className: 'num-input', type: 'text', inputMode: 'decimal',
+          value: value, style: w ? { width: w } : {},
+          onChange: function(e) { setter(e.target.value); },
+          onFocus: function(e) { e.target.select(); }
+        }),
+        suffix ? h('span', { className: 'suffix' }, suffix) : null
+      )
+    );
+  }
+
+  var hasData = n(nationalSales) > 0;
+
+  // ===== SUMMARY VIEW =====
+  function SummaryView() {
+    return h('div', null,
+      h('div', { className: 'section gold-section' },
+        h('div', { className: 'section-title gold' }, 'グループ店 導入推奨台数一覧'),
+        !hasData
+          ? h('div', { style: { padding: '24px', textAlign: 'center', color: 'var(--text-dim)', fontSize: 13 } },
+              '機種データの全国販売台数を入力すると推奨台数が表示されます'
+            )
+          : h('div', { className: 'group-grid' },
+              areas.map(function(ar, ai) {
+                var calc = calcAreaData(ar);
+                var groupStores = calc.storeData.filter(function(s) { return s.isGroup; });
+                var suf = calc.sufficiency;
+                return groupStores.map(function(store, gi) {
+                  return h('div', { key: ai + '-' + gi, className: 'group-card' },
+                    h('div', { className: 'group-card-area' }, ar.name),
+                    h('div', { className: 'group-card-name' }, store.name),
+                    h('div', { className: 'group-card-rec' }, Math.round(store.weeklyRec[4])),
+                    h('div', { className: 'group-card-unit' }, '台　（5週目推奨）'),
+                    h('div', { className: 'group-card-share' },
+                      'シェア ' + fmt(store.share * 100) + '%　／　エリア ' + Math.round(calc.weeklyCustomers[4]) + '人'
+                    ),
+                    n(store.hopedUnits) > 0 ? h('div', { style: { fontSize: 12, color: 'var(--gold)', marginTop: 6 } },
+                      '希望台数：', h('strong', { style: { fontFamily: 'Rajdhani, sans-serif', fontSize: 18 } }, n(store.hopedUnits) + '台')
+                    ) : null,
+                    h('div', { className: 'group-card-suf' },
+                      h('div', null,
+                        h('div', { style: { fontSize: 10, color: 'rgba(245,158,11,0.5)', marginBottom: 4 } }, 'エリア充足率'),
+                        h('div', { className: 'group-card-suf-num', style: { color: sufColor(suf) } }, fmt(suf) + '%')
+                      ),
+                      h('span', { className: 'badge ' + sufBadge(suf) }, sufMsg(suf))
+                    )
+                  );
+                });
+              })
+            )
+      )
+    );
+  }
+
+  // ===== DETAIL VIEW =====
+  function DetailView() {
+    var calc = calcAreaData(area);
+    var totalMachines = calc.totalMachines;
+    var weeklyAreaCustomers = calc.weeklyCustomers;
+    var storeData = calc.storeData;
+    var isBad = selectedEval === "悪";
+    var suf = calc.sufficiency;
+
+    // Group stores for week cards
+    var groupStores = storeData.filter(function(s) { return s.isGroup; });
+    var rivalStores = storeData.filter(function(s) { return !s.isGroup; });
+
+    return h('div', null,
+      // Area tabs
+      h('div', { className: 'section' },
+        h('div', { className: 'section-title' }, 'エリア選択'),
+        h('div', { className: 'area-bar' },
+          areas.map(function(a, i) {
+            return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 2 } },
+              h('button', { className: 'area-tab' + (areaIdx === i ? ' active' : ''), onClick: function() { setCurrentArea(i); } }, a.name),
+              areas.length > 1 ? h('button', { className: 'area-tab-del', onClick: function() { removeArea(i); } }, '✕') : null
+            );
+          }),
+          h('button', { className: 'add-area-btn', onClick: addArea }, '＋ エリア追加')
+        ),
+        h('div', { className: 'input-row' },
+          h('label', { className: 'input-label' }, 'エリア名'),
+          h('input', { type: 'text', className: 'area-name-input', value: area.name, onChange: function(e) { updateArea('name', e.target.value); } })
+        ),
+        InputRow('エリアピーク客数', area.areaPeakCustomers, function(v) { updateArea('areaPeakCustomers', v); }, '人', '130px'),
+
+        h('div', { className: 'sub-label', style: { margin: '16px 0 10px' } }, 'STORE LIST　チェック ＝ グループ店'),
+        area.stores.map(function(store, si) {
+          return h('div', { key: si, className: 'store-row ' + (store.isGroup ? 'group-row' : 'rival-row') },
+            h('input', { type: 'checkbox', className: 'group-check', checked: !!store.isGroup, onChange: function(e) { updateStore(si, 'isGroup', e.target.checked); } }),
+            h('input', { type: 'text', value: store.name, onChange: function(e) { updateStore(si, 'name', e.target.value); }, className: 'store-name-input ' + (store.isGroup ? 'group' : 'rival') }),
+            h('input', { type: 'text', inputMode: 'numeric', value: store.machines, onChange: function(e) { updateStore(si, 'machines', e.target.value); }, onFocus: function(e) { e.target.select(); }, className: 'store-machines-input' }),
+            h('span', { className: 'suffix' }, '台'),
+            h('span', { className: 'store-share' }, 'シェア ' + fmt(n(store.machines) / (totalMachines || 1) * 100) + '%'),
+            hasData ? h('span', { className: 'store-rec', style: { color: store.isGroup ? 'var(--gold)' : 'var(--text-dim)' } },
+              (store.isGroup ? '推奨 ' : '') + Math.round(weeklyAreaCustomers[4] * n(store.machines) / (totalMachines || 1)) + '台'
+            ) : null,
+            store.isGroup ? h('div', { className: 'hoped-wrap' },
+              h('span', { className: 'hoped-label' }, '希望台数'),
+              h('input', {
+                type: 'text', inputMode: 'numeric', className: 'hoped-input',
+                value: store.hopedUnits || '',
+                placeholder: '未定',
+                onChange: function(e) { updateStore(si, 'hopedUnits', e.target.value); },
+                onFocus: function(e) { e.target.select(); }
+              }),
+              h('span', { className: 'hoped-label' }, '台'),
+              n(store.hopedUnits) > 0 ? h('span', { className: 'hoped-confirmed' }, '充足率反映中') : null
+            ) : null,
+            !store.isGroup ? h('div', { className: 'planned-wrap' },
+              h('input', { type: 'checkbox', className: 'planned-check', checked: !!store.hasPlanned, onChange: function(e) { updateStore(si, 'hasPlanned', e.target.checked); } }),
+              h('span', { className: 'planned-label' }, '確定'),
+              store.hasPlanned ? h('input', {
+                type: 'text', inputMode: 'numeric', className: 'planned-input',
+                value: store.plannedUnits || '',
+                placeholder: '0',
+                onChange: function(e) { updateStore(si, 'plannedUnits', e.target.value); },
+                onFocus: function(e) { e.target.select(); }
+              }) : null,
+              store.hasPlanned ? h('span', { className: 'planned-label' }, '台') : null,
+              store.hasPlanned && n(store.plannedUnits) > 0 ? h('span', { className: 'planned-confirmed' }, '✓') : null
+            ) : null,
+            h('button', { onClick: function() { removeStore(si); }, className: 'remove-btn' }, '✕')
+          );
+        }),
+        h('button', { onClick: addStore, className: 'add-store-btn' }, '＋ 店舗を追加'),
+        h('div', { className: 'area-summary-bar' },
+          h('span', null, 'エリア合計：', h('strong', { style: { color: 'var(--text)', fontFamily: 'Rajdhani, sans-serif', fontSize: 16 } }, totalMachines.toLocaleString() + ' 台')),
+          h('span', null, 'グループ店：', h('strong', { style: { color: 'var(--gold)', fontFamily: 'Rajdhani, sans-serif', fontSize: 16 } }, area.stores.filter(function(s) { return s.isGroup; }).length + ' 店舗'))
+        )
+      ),
+
+      // Results
+      hasData ? h('div', { className: 'section' },
+        h('div', { className: 'section-title' }, '算出結果　／　' + area.name),
+
+        // Group store week cards
+        groupStores.map(function(store, gi) {
+          return h('div', { key: gi },
+            h('div', { className: 'sub-label' }, store.name + '　週別推奨台数'),
+            h('div', { className: 'week-cards', style: { marginBottom: 16 } },
+              WEEKS.map(function(week, wi) {
+                return h('div', { key: week, className: 'week-card ' + (wi === 0 ? 'first' : 'other') },
+                  h('div', { className: 'week-label', style: { color: wi === 0 ? 'var(--teal2)' : 'var(--text-dim)' } }, week),
+                  h('div', { className: 'week-num gold' }, Math.round(store.weeklyRec[wi])),
+                  h('div', { className: 'week-unit' }, '台'),
+                  h('div', { className: 'week-os' }, 'OS ' + fmt(outshareByEval[selectedEval][wi]) + '%')
+                );
+              })
+            )
+          );
+        }),
+
+        // All stores recommended
+        h('div', { className: 'sub-label', style: { marginTop: 8 } }, '全店舗 推奨台数（5週目）'),
+        h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 } },
+          storeData.map(function(store, si) {
+            return h('div', { key: si, className: 'rival-card ' + (store.isGroup ? 'group-rival' : '') },
+              h('div', { className: 'rival-name ' + (store.isGroup ? 'gold' : '') }, store.name),
+              h('div', { className: 'rival-num ' + (store.isGroup ? 'gold' : '') }, Math.round(store.weeklyRec[4])),
+              h('div', { className: 'rival-unit' }, '台')
+            );
+          })
+        ),
+
+        // Rec info
+        h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 20 } },
+          h('div', { className: 'rec-info', style: { flex: 1 } },
+            h('div', null, h('span', { className: 'rec-info-label' }, '評価　'), h('span', { className: 'rec-info-val', style: { color: isBad ? 'var(--warn)' : 'var(--teal2)' } }, selectedEval)),
+            h('div', null, h('span', { className: 'rec-info-label' }, '5週目アウトシェア　'), h('span', { className: 'rec-info-val', style: { color: 'var(--text)' } }, fmt(outshareByEval[selectedEval][4]) + '%')),
+            h('div', null, h('span', { className: 'rec-info-label' }, 'エリア予測客数　'), h('span', { className: 'rec-info-val', style: { color: 'var(--text)' } }, fmt(weeklyAreaCustomers[4]) + '人'))
+          )
+        ),
+
+        // Sufficiency
+        h('div', { className: 'suf-box', style: { background: sufBg(suf), border: '1px solid ' + sufBorder(suf), borderRadius: 3 } },
+          h('div', null,
+            h('div', { className: 'suf-label' }, 'エリア充足率（5週目）' + calc.sufNote),
+            h('div', { className: 'suf-num', style: { color: sufColor(suf) } }, fmt(suf) + '%')
+          ),
+          h('div', { className: 'suf-divider' }),
+          h('div', null,
+            h('div', { className: 'suf-label' }, 'エリア導入台数合計（5週目）'),
+            h('div', { className: 'suf-total', style: { color: 'var(--text)' } }, Math.round(calc.totalSupply5w) + ' 台')
+          ),
+          h('div', { className: 'suf-msg', style: { color: sufColor(suf) } }, sufMsg(suf))
+        )
+      ) : null
+    );
+  }
+
+  return h('div', { className: 'wrap' },
+
+    // Header
+    h('div', { className: 'header' },
+      h('div', { className: 'header-top' },
+        h('div', null,
+          h('div', { className: 'header-sub' }, 'SLOT UNIT MANAGEMENT TOOL / 20円スロット 統括管理'),
+          h('div', { style: { display: 'flex', alignItems: 'center' } },
+            h('h1', { className: 'header-title' }, '統括', h('span', null, '新台導入管理ツール')),
+            h('span', { className: 'save-indicator' + (saveFlash ? ' show' : '') }, '✓ 保存済み')
+          )
+        )
+      ),
+      h('div', { className: 'view-toggle' },
+        h('button', { className: 'view-btn' + (view === 'summary' ? ' active' : ''), onClick: function() { setView('summary'); } }, 'グループ店一覧'),
+        h('button', { className: 'view-btn' + (view === 'detail' ? ' active' : ''), onClick: function() { setView('detail'); } }, 'エリア詳細')
+      )
+    ),
+
+    // 01 県内データ
+    h('div', { className: 'section' },
+      h('div', { className: 'section-title' }, '01 / 県内データ'),
+      h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap' } },
+        InputRow('20円設置台数', prefMachines, setPrefMachines, '台', '120px'),
+        InputRow('ピーク稼働率', peakOccupancy, setPeakOccupancy, '%', '100px'),
+        InputRow('県内販売按分率', prefRatio, setPrefRatio, '%', '80px')
+      ),
+      h('div', { className: 'result-box' },
+        h('div', null, h('div', { className: 'result-label' }, '県内最大遊技人数'), h('div', { className: 'result-val' }, Math.round(maxPlayers).toLocaleString() + ' 人'))
+      )
+    ),
+
+    // 02 機種データ
+    h('div', { className: 'section' },
+      h('div', { className: 'section-title' }, '02 / 機種データ'),
+      h('div', { className: 'input-row' },
+        h('label', { className: 'input-label' }, '機種名　／　全国販売台数'),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+          h('input', { type: 'text', className: 'text-input', value: machineName, onChange: function(e) { setMachineName(e.target.value); }, placeholder: '機種名を入力', style: { width: 200, marginRight: 8 } }),
+          h('input', { className: 'num-input', type: 'text', inputMode: 'decimal', value: nationalSales, placeholder: '販売台数', onChange: function(e) { setNationalSales(e.target.value); }, onFocus: function(e) { e.target.select(); }, style: { width: 120 } }),
+          h('span', { className: 'suffix' }, '台')
+        )
+      ),
+      h('div', { className: 'input-row', style: { marginTop: 4 } },
+        h('label', { className: 'input-label' }, '評価'),
+        h('div', { className: 'eval-row' },
+          EVALUATIONS.map(function(ev) {
+            return h('button', { key: ev, className: 'eval-btn' + (selectedEval === ev ? ' active' : '') + (ev === '悪' ? ' bad' : ''), onClick: function() { setSelectedEval(ev); } }, ev);
+          })
+        )
+      ),
+      hasData ? h('div', { className: 'result-box' },
+        h('div', null, h('div', { className: 'result-label' }, '県内販売台数'), h('div', { className: 'result-val' }, Math.round(prefSales).toLocaleString() + ' 台')),
+        h('div', null, h('div', { className: 'result-label' }, '基準アウトシェア'), h('div', { className: 'result-val' }, fmt(baseOutshare) + ' %')),
+        h('div', null, h('div', { className: 'result-label' }, '5週目アウトシェア（' + selectedEval + '）'), h('div', { className: 'result-val' }, fmt(outshareByEval[selectedEval][4]) + ' %'))
+      ) : null
+    ),
+
+    // Main view
+    view === 'summary' ? SummaryView() : DetailView(),
+
+    // Data management
+    h('div', { className: 'section' },
+      h('div', { className: 'section-title' }, 'データ管理'),
+      h('div', { className: 'io-bar' },
+        h('button', { className: 'io-btn export', onClick: handleExport }, '⬇ 設定をエクスポート'),
+        h('button', { className: 'io-btn import', onClick: function() { importRef.current && importRef.current.click(); } }, '⬆ 設定をインポート'),
+        h('input', { ref: importRef, type: 'file', accept: '.json', style: { display: 'none' }, onChange: handleImport })
+      ),
+      h('div', { className: 'io-hint' }, '※ 端末が変わる際はエクスポートしたJSONファイルを新しい端末でインポートしてください')
+    ),
+
+    h('div', { className: 'footer' }, 'OUTSHARE = PREF SALES ÷ PREF MAX PLAYERS　／　UNIT = AREA PEAK × OUTSHARE × STORE SHARE')
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>

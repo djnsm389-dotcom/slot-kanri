@@ -257,6 +257,8 @@
     .io-btn.export { background: var(--teal-dim); color: var(--teal2); border: 1px solid var(--teal-border); }
     .io-btn.import { background: #f9fafb; color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); }
     .io-hint { font-size: 10px; color: var(--text-dim); margin-top: 8px; }
+    .io-btn.reset { background: rgba(220,38,38,0.06); color: #dc2626; border: 1px solid rgba(220,38,38,0.3); }
+    .io-btn.reset:hover { background: rgba(220,38,38,0.12); }
 
     .footer { text-align: center; font-size: 10px; color: rgba(8,145,178,0.2); margin-top: 12px; letter-spacing: 0.08em; font-family: 'Rajdhani', sans-serif; }
 
@@ -344,18 +346,18 @@ function n(v) { return parseFloat(v) || 0; }
 function fmt(v, d) { return n(v).toFixed(d === undefined ? 2 : d); }
 function loadData() { try { var r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : {}; } catch(e) { return {}; } }
 function saveData(d) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {} }
-function sufColor(r) { return r < 100 ? '#1e3a8a' : r <= 120 ? '#15803d' : '#dc2626'; }
-function sufBadge(r) { return r < 100 ? 'blue' : r <= 120 ? 'green' : 'red'; }
-function sufMsg(r)   { return r < 100 ? '◎ 余地あり' : r <= 120 ? '✓ 適正' : '⚠ 供給過多'; }
-function sufBg(r)    { return r < 100 ? 'rgba(30,58,138,0.08)' : r <= 120 ? 'rgba(21,128,61,0.08)' : 'rgba(220,38,38,0.08)'; }
-function sufBorder(r){ return r < 100 ? 'rgba(30,58,138,0.5)' : r <= 120 ? 'rgba(21,128,61,0.35)' : 'rgba(220,38,38,0.35)'; }
+function sufColor(r) { return r < 100 ? '#1e3a8a' : r <= 125 ? '#15803d' : '#dc2626'; }
+function sufBadge(r) { return r < 100 ? 'blue' : r <= 125 ? 'green' : 'red'; }
+function sufMsg(r)   { return r < 100 ? '◎ 余地あり' : r <= 125 ? '✓ 適正' : '⚠ 供給過多'; }
+function sufBg(r)    { return r < 100 ? 'rgba(30,58,138,0.08)' : r <= 125 ? 'rgba(21,128,61,0.08)' : 'rgba(220,38,38,0.08)'; }
+function sufBorder(r){ return r < 100 ? 'rgba(30,58,138,0.5)' : r <= 125 ? 'rgba(21,128,61,0.35)' : 'rgba(220,38,38,0.35)'; }
 
 function App() {
   var saved = loadData();
 
   const [prefMachines,  setPrefMachines]  = useState(saved.prefMachines  || "16926");
   const [peakOccupancy, setPeakOccupancy] = useState(saved.peakOccupancy || "38.7");
-  const [prefRatio,     setPrefRatio]     = useState(saved.prefRatio     || "2");
+  const [prefRatio,     setPrefRatio]     = useState(saved.prefRatio     || "1.6");
   const [machineName,   setMachineName]   = useState(saved.machineName   || "");
   const [nationalSales, setNationalSales] = useState(saved.nationalSales || "");
   const [selectedEval,  setSelectedEval]  = useState(saved.selectedEval  || "良");
@@ -456,6 +458,22 @@ function App() {
     setCurrentArea(Math.max(0, i - 1));
   }
 
+  function handleReset() {
+    if (window.confirm('初期データに戻します。\n現在の入力内容はすべて消えます。\nよろしいですか？')) {
+      try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+      setPrefMachines("16926");
+      setPeakOccupancy("38.7");
+      setPrefRatio("1.6");
+      setMachineName("");
+      setNationalSales("");
+      setSelectedEval("良");
+      setAreas(DEFAULT_AREAS);
+      setCurrentArea(0);
+      setView('summary');
+      alert('初期データに戻しました。');
+    }
+  }
+
   function handleExport() {
     var data = { prefMachines, peakOccupancy, prefRatio, machineName, nationalSales, selectedEval, areas, currentArea };
     var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -521,7 +539,7 @@ function App() {
                     h('div', { className: 'group-card-rec' }, Math.round(store.weeklyRec[4])),
                     h('div', { className: 'group-card-unit' }, '台　（5週目推奨）'),
                     h('div', { className: 'group-card-share' },
-                      'シェア ' + fmt(store.share * 100) + '%　／　エリア ' + Math.round(calc.weeklyCustomers[4]) + '人'
+                      'シェア ' + fmt(store.share * 100) + '%　／　エリア予測客数 ' + Math.round(calc.weeklyCustomers[4]) + '人　／　エリア導入台数 ' + Math.round(calc.totalSupply5w) + '台'
                     ),
                     n(store.hopedUnits) > 0 ? h('div', { style: { fontSize: 12, color: 'var(--gold)', marginTop: 6 } },
                       '希望台数：', h('strong', { style: { fontFamily: 'Rajdhani, sans-serif', fontSize: 18 } }, n(store.hopedUnits) + '台')
@@ -745,7 +763,8 @@ function App() {
       h('div', { className: 'io-bar' },
         h('button', { className: 'io-btn export', onClick: handleExport }, '⬇ 設定をエクスポート'),
         h('button', { className: 'io-btn import', onClick: function() { importRef.current && importRef.current.click(); } }, '⬆ 設定をインポート'),
-        h('input', { ref: importRef, type: 'file', accept: '.json', style: { display: 'none' }, onChange: handleImport })
+        h('input', { ref: importRef, type: 'file', accept: '.json', style: { display: 'none' }, onChange: handleImport }),
+        h('button', { className: 'io-btn reset', onClick: handleReset }, '↺ 初期データに戻す')
       ),
       h('div', { className: 'io-hint' }, '※ 端末が変わる際はエクスポートしたJSONファイルを新しい端末でインポートしてください')
     ),

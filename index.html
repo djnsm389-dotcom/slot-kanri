@@ -214,6 +214,7 @@
     .badge.blue { background: rgba(30,58,138,0.12); color: #1e3a8a; border: 1px solid rgba(30,58,138,0.5); font-weight: 700; }
     .badge.green { background: rgba(21,128,61,0.10); color: #15803d; border: 1px solid rgba(21,128,61,0.4); font-weight: 700; }
     .badge.red { background: rgba(220,38,38,0.10); color: #dc2626; border: 1px solid rgba(220,38,38,0.4); font-weight: 700; }
+    .badge.yellow { background: rgba(180,83,9,0.10); color: #b45309; border: 1px solid rgba(180,83,9,0.4); font-weight: 700; }
 
     /* Week cards */
     .week-cards { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
@@ -346,11 +347,24 @@ function n(v) { return parseFloat(v) || 0; }
 function fmt(v, d) { return n(v).toFixed(d === undefined ? 2 : d); }
 function loadData() { try { var r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : {}; } catch(e) { return {}; } }
 function saveData(d) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {} }
-function sufColor(r) { return r < 100 ? '#1e3a8a' : r <= 125 ? '#15803d' : '#dc2626'; }
-function sufBadge(r) { return r < 100 ? 'blue' : r <= 125 ? 'green' : 'red'; }
-function sufMsg(r)   { return r < 100 ? '◎ 余地あり' : r <= 125 ? '✓ 適正' : '⚠ 供給過多'; }
-function sufBg(r)    { return r < 100 ? 'rgba(30,58,138,0.08)' : r <= 125 ? 'rgba(21,128,61,0.08)' : 'rgba(220,38,38,0.08)'; }
-function sufBorder(r){ return r < 100 ? 'rgba(30,58,138,0.5)' : r <= 125 ? 'rgba(21,128,61,0.35)' : 'rgba(220,38,38,0.35)'; }
+function sufColor(r) {
+  return r < 100 ? '#1e3a8a' : r <= 120 ? '#15803d' : r <= 140 ? '#b45309' : '#dc2626';
+}
+function sufBadge(r) {
+  return r < 100 ? 'blue' : r <= 120 ? 'green' : r <= 140 ? 'yellow' : 'red';
+}
+function sufMsg(r) {
+  return r < 100 ? '◎ 積極導入 — 需要に対して供給が不足しています'
+       : r <= 120 ? '✓ 余地あり — 導入余地があります'
+       : r <= 140 ? '－ 適正 — エリア需要と供給のバランスが取れています'
+       : '⚠ 供給過多 — エリアが飽和傾向です';
+}
+function sufBg(r) {
+  return r < 100 ? 'rgba(30,58,138,0.08)' : r <= 120 ? 'rgba(21,128,61,0.08)' : r <= 140 ? 'rgba(180,83,9,0.08)' : 'rgba(220,38,38,0.08)';
+}
+function sufBorder(r) {
+  return r < 100 ? 'rgba(30,58,138,0.5)' : r <= 120 ? 'rgba(21,128,61,0.35)' : r <= 140 ? 'rgba(180,83,9,0.4)' : 'rgba(220,38,38,0.35)';
+}
 
 function App() {
   var saved = loadData();

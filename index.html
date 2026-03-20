@@ -215,6 +215,7 @@
     .badge.green { background: rgba(21,128,61,0.10); color: #15803d; border: 1px solid rgba(21,128,61,0.4); font-weight: 700; }
     .badge.red { background: rgba(220,38,38,0.10); color: #dc2626; border: 1px solid rgba(220,38,38,0.4); font-weight: 700; }
     .badge.yellow { background: rgba(180,83,9,0.10); color: #b45309; border: 1px solid rgba(180,83,9,0.4); font-weight: 700; }
+    .badge.nocomp { background: rgba(234,88,12,0.10); color: #ea580c; border: 1px solid rgba(234,88,12,0.4); font-weight: 700; }
 
     /* Week cards */
     .week-cards { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
@@ -565,13 +566,18 @@ function App() {
                       n(store.hopedUnits) > 0 ? h('div', { style: { fontSize: 12, color: 'var(--gold)', marginTop: 6 } },
                         '希望台数：', h('strong', { style: { fontFamily: 'Rajdhani, sans-serif', fontSize: 18 } }, n(store.hopedUnits) + '台')
                       ) : null,
-                      h('div', { className: 'group-card-suf' },
-                        h('div', null,
-                          h('div', { style: { fontSize: 10, color: 'rgba(245,158,11,0.5)', marginBottom: 4 } }, 'エリア充足率'),
-                          h('div', { className: 'group-card-suf-num', style: { color: sufColor(suf), fontWeight: 700 } }, fmt(suf) + '%')
-                        ),
-                        h('span', { className: 'badge ' + sufBadge(suf) }, sufMsg(suf))
-                      )
+                      (function() {
+                        var noComp = ar.stores.filter(function(s) { return !s.isGroup; }).length === 0;
+                        return h('div', { className: 'group-card-suf' },
+                          h('div', null,
+                            h('div', { style: { fontSize: 10, color: 'rgba(245,158,11,0.5)', marginBottom: 4 } }, 'エリア充足率'),
+                            h('div', { className: 'group-card-suf-num', style: { color: sufColor(suf), fontWeight: 700 } }, fmt(suf) + '%')
+                          ),
+                          noComp
+                            ? h('span', { className: 'badge nocomp' }, '⚠ 競合なし — 投資効率検討')
+                            : h('span', { className: 'badge ' + sufBadge(suf) }, sufMsg(suf))
+                        );
+                      })()
                     );
                   });
                 }),

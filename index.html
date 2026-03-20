@@ -288,7 +288,7 @@ const EVALUATIONS = ["特上", "良", "並", "悪"];
 const WEEKS = ["初週", "2週目", "3週目", "4週目", "5週目"];
 
 const DEFAULT_AREAS = [
-  { name: "浜線エリア", areaPeakCustomers: "2100", stores: [
+  { name: "浜線エリア", areaPeakCustomers: "2300", stores: [
     { name: "浜線店",         machines: "491", isGroup: true  },
     { name: "白山店",         machines: "259", isGroup: true  },
     { name: "FACE本山",       machines: "717", isGroup: false },
@@ -340,6 +340,12 @@ const DEFAULT_AREAS = [
     { name: "ＰＡＲＩＳ＆ＰＡＲＩＳ", machines: "160", isGroup: false },
     { name: "夢屋 天草",            machines: "154", isGroup: false },
     { name: "シルバー天草本渡",     machines: "212", isGroup: false },
+  ]},
+  { name: "人吉エリア", areaPeakCustomers: "400", stores: [
+    { name: "東間店",         machines: "200", isGroup: true },
+    { name: "青井本店",       machines: "177", isGroup: true },
+    { name: "あさぎり店",     machines: "74",  isGroup: true },
+    { name: "パレス多良木店", machines: "78",  isGroup: true },
   ]},
 ];
 
@@ -541,33 +547,56 @@ function App() {
           ? h('div', { style: { padding: '24px', textAlign: 'center', color: 'var(--text-dim)', fontSize: 13 } },
               '機種データの全国販売台数を入力すると推奨台数が表示されます'
             )
-          : h('div', { className: 'group-grid' },
-              areas.map(function(ar, ai) {
-                var calc = calcAreaData(ar);
-                var groupStores = calc.storeData.filter(function(s) { return s.isGroup; });
-                var suf = calc.sufficiency;
-                return groupStores.map(function(store, gi) {
-                  return h('div', { key: ai + '-' + gi, className: 'group-card' },
-                    h('div', { className: 'group-card-area' }, ar.name),
-                    h('div', { className: 'group-card-name' }, store.name),
-                    h('div', { className: 'group-card-rec' }, Math.round(store.weeklyRec[4])),
-                    h('div', { className: 'group-card-unit' }, '台　（5週目推奨）'),
-                    h('div', { className: 'group-card-share' },
-                      'シェア ' + fmt(store.share * 100) + '%　／　エリア予測客数 ' + Math.round(calc.weeklyCustomers[4]) + '人　／　エリア導入台数 ' + Math.round(calc.totalSupply5w) + '台'
-                    ),
-                    n(store.hopedUnits) > 0 ? h('div', { style: { fontSize: 12, color: 'var(--gold)', marginTop: 6 } },
-                      '希望台数：', h('strong', { style: { fontFamily: 'Rajdhani, sans-serif', fontSize: 18 } }, n(store.hopedUnits) + '台')
-                    ) : null,
-                    h('div', { className: 'group-card-suf' },
-                      h('div', null,
-                        h('div', { style: { fontSize: 10, color: 'rgba(245,158,11,0.5)', marginBottom: 4 } }, 'エリア充足率'),
-                        h('div', { className: 'group-card-suf-num', style: { color: sufColor(suf), fontWeight: 700 } }, fmt(suf) + '%')
+          : h('div', null,
+              h('div', { className: 'group-grid' },
+                areas.map(function(ar, ai) {
+                  var calc = calcAreaData(ar);
+                  var groupStores = calc.storeData.filter(function(s) { return s.isGroup; });
+                  var suf = calc.sufficiency;
+                  return groupStores.map(function(store, gi) {
+                    return h('div', { key: ai + '-' + gi, className: 'group-card' },
+                      h('div', { className: 'group-card-area' }, ar.name),
+                      h('div', { className: 'group-card-name' }, store.name),
+                      h('div', { className: 'group-card-rec' }, Math.round(store.weeklyRec[4])),
+                      h('div', { className: 'group-card-unit' }, '台　（5週目推奨）'),
+                      h('div', { className: 'group-card-share' },
+                        'シェア ' + fmt(store.share * 100) + '%　／　エリア予測客数 ' + Math.round(calc.weeklyCustomers[4]) + '人　／　エリア導入台数 ' + Math.round(calc.totalSupply5w) + '台'
                       ),
-                      h('span', { className: 'badge ' + sufBadge(suf) }, sufMsg(suf))
-                    )
+                      n(store.hopedUnits) > 0 ? h('div', { style: { fontSize: 12, color: 'var(--gold)', marginTop: 6 } },
+                        '希望台数：', h('strong', { style: { fontFamily: 'Rajdhani, sans-serif', fontSize: 18 } }, n(store.hopedUnits) + '台')
+                      ) : null,
+                      h('div', { className: 'group-card-suf' },
+                        h('div', null,
+                          h('div', { style: { fontSize: 10, color: 'rgba(245,158,11,0.5)', marginBottom: 4 } }, 'エリア充足率'),
+                          h('div', { className: 'group-card-suf-num', style: { color: sufColor(suf), fontWeight: 700 } }, fmt(suf) + '%')
+                        ),
+                        h('span', { className: 'badge ' + sufBadge(suf) }, sufMsg(suf))
+                      )
+                    );
+                  });
+                }),
+                // 合計カード
+                (function() {
+                  var totalRec = areas.reduce(function(sum, ar) {
+                    var calc = calcAreaData(ar);
+                    return sum + calc.storeData.filter(function(s) { return s.isGroup; }).reduce(function(s2, st) { return s2 + Math.round(st.weeklyRec[4]); }, 0);
+                  }, 0);
+                  var totalHoped = areas.reduce(function(sum, ar) {
+                    var calc = calcAreaData(ar);
+                    return sum + calc.storeData.filter(function(s) { return s.isGroup; }).reduce(function(s2, st) { return s2 + n(st.hopedUnits); }, 0);
+                  }, 0);
+                  return h('div', { className: 'group-card', style: { borderColor: 'rgba(180,83,9,0.5)', background: 'rgba(180,83,9,0.06)' } },
+                    h('div', { className: 'group-card-area' }, 'TOTAL'),
+                    h('div', { className: 'group-card-name' }, '熊本グループ店合計'),
+                    h('div', { className: 'group-card-rec' }, totalRec),
+                    h('div', { className: 'group-card-unit' }, '台　（5週目推奨合計）'),
+                    h('div', { className: 'group-card-share' }, '全' + areas.reduce(function(s, ar) { return s + ar.stores.filter(function(st) { return st.isGroup; }).length; }, 0) + '店舗の合計'),
+                    totalHoped > 0 ? h('div', { style: { fontSize: 12, color: 'var(--gold)', marginTop: 6 } },
+                      '希望台数合計：', h('strong', { style: { fontFamily: 'Rajdhani, sans-serif', fontSize: 18 } }, totalHoped + '台')
+                    ) : null
                   );
-                });
-              })
+                })()
+              )
             )
       )
     );
